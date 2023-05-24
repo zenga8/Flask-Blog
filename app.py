@@ -30,29 +30,33 @@ def get_post(post_id):
         abort(404)
     return post
 
+#View a post
 @app.route('/<int:post_id>')
 def post(post_id):
     post = get_post(post_id)
     return render_template('post.html', post=post)
 
+#Create a post
 @app.route('/create', methods=('GET', 'POST'))
 def create():
     if request.method == 'POST':
         title = request.form['title']
         content = request.form['content']
+        picture = request.form['picture']
 
         if not title:
             flash('Title is required!')
         else:
             conn = get_db_connection()
-            conn.execute('INSERT INTO posts (title, content) VALUES (?, ?)',
-                         (title, content))
+            conn.execute('INSERT INTO posts (title, content, picture) VALUES (?, ?, ?)',
+                         (title, content, picture))
             conn.commit()
             conn.close()
             return redirect(url_for('index'))
 
     return render_template('create.html')
 
+#Edit post
 @app.route('/<int:id>/edit', methods=('GET', 'POST'))
 def edit(id):
     post = get_post(id)
@@ -60,20 +64,22 @@ def edit(id):
     if request.method == 'POST':
         title = request.form['title']
         content = request.form['content']
+        picture = request.form['picture']
 
         if not title:
             flash('Title is required!')
         else:
             conn = get_db_connection()
-            conn.execute('UPDATE posts SET title = ?, content = ?'
+            conn.execute('UPDATE posts SET title = ?, content = ?, picture = ?'
                          ' WHERE id = ?',
-                         (title, content, id))
+                         (title, content, picture, id))
             conn.commit()
             conn.close()
             return redirect(url_for('index'))
 
     return render_template('edit.html', post=post)
 
+#Delete post
 @app.route('/<int:id>/delete', methods=('POST',))
 def delete(id):
     post = get_post(id)
